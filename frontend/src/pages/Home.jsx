@@ -21,21 +21,19 @@ function Home() {
             dispatch(setUserdata(data))
         } catch (error) {
             console.log(error)
-            alert("Backend login failed: " + (error?.response?.status || error?.message || "unknown error"))
+            alert("Login failed. Please check your connection and try again.")
         }
     }
 
     const handleCredentialResponse = async (response) => {
-        alert("Google callback fired. Credential received: " + (response?.credential ? "YES" : "NO"))
         try {
             const credential = GoogleAuthProvider.credential(response.credential)
             const result = await signInWithCredential(auth, credential)
             const token = await result.user.getIdToken()
-            alert("Firebase sign-in succeeded, sending token to backend...")
             await handleLogin(token)
         } catch (error) {
             console.log("google sign-in error", error)
-            alert("Google sign-in failed: " + (error?.code || error?.message || "unknown error"))
+            alert("Google sign-in failed. Please try again.")
         }
     }
 
