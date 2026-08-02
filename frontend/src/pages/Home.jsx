@@ -1,4 +1,4 @@
-import { signInWithRedirect, getRedirectResult,onAuthStateChanged } from 'firebase/auth'
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth'
 import React, { useEffect, useState } from 'react'
 import { auth, googleProvider } from '../../utils/firebase'
 import api from '../../utils/axios'
@@ -20,6 +20,7 @@ function Home() {
             dispatch(setUserdata(data))
         } catch (error) {
             console.log(error)
+            alert("Login failed while contacting the server. Please try again.")
         }
     }
 
@@ -33,6 +34,11 @@ function Home() {
                 }
             } catch (error) {
                 console.log("redirect login error", error)
+                if (error?.code === "auth/unauthorized-domain") {
+                    alert("This domain is not authorized for sign-in. Please contact support.")
+                } else if (error?.code) {
+                    alert(`Sign-in failed: ${error.code}`)
+                }
             } finally {
                 setCheckingRedirect(false)
             }
@@ -40,23 +46,13 @@ function Home() {
         completeRedirectLogin()
     }, [])
 
-    useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        console.log("Auth state:", user);
-
-        if (user && !userData) {
-            const token = await user.getIdToken();
-            await handleLogin(token);
-        }
-
-        setCheckingRedirect(false);
-    });
-
-    return () => unsubscribe();
-}, [userData]);
-
     const googleLogin = async () => {
-        await signInWithRedirect(auth, googleProvider)
+        try {
+            await signInWithRedirect(auth, googleProvider)
+        } catch (error) {
+            console.log("could not start sign-in", error)
+            alert("Could not open Google sign-in. If you're opening this link inside WhatsApp, Instagram, or another app, please open it in your browser (Chrome or Safari) instead.")
+        }
     }
 
     return (
