@@ -1,6 +1,7 @@
 import { Code2, FileText, Globe, ImageIcon, MessageSquare, Mic, MicOff, Paperclip, Presentation, Send, X, Zap } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import sendMessage from '../features/sendMessage'
+import transcribeAudio from '../features/transcribeAudio'
 import { useDispatch, useSelector } from 'react-redux'
 import { addMessage, setArtifacts, setIsLoading, setMessages } from '../redux/messageSlice'
 import { createConversation } from '../features/createConversation'
@@ -16,65 +17,59 @@ function ChatInput() {
   const { messages, isLoading } = useSelector(state => state.message)
   const [selectedFile, setSelectedFile] = useState(null)
   const [listening, setListening] = useState(false)
-  const recognitionRef = useRef(null)
+  const [transcribing, setTranscribing] = useState(false)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
   const fileRef = useRef(null)
   const dispatch = useDispatch()
 
-
-useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) return;
-
-    const recognition = new SpeechRecognition()
-    recognition.lang = "en-US"
-    recognition.interimResults = true;
-    recognition.continuous = true;
-
-    recognition.onresult = (event) => {
-      let transcript = ""
-
-      for (let index = event.resultIndex; index < event.results.length; index++) {
-
-        transcript += event.results[index][0].transcript
-      }
-      setValue(transcript)
-    }
-
-    recognition.onend = () => {
+  const toggleMic = async () => {
+    if (listening) {
+      mediaRecorderRef.current?.stop()
       setListening(false)
-    }
-
-    recognition.onerror = (event) => {
-      setListening(false)
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        alert("Microphone access was denied. Please allow microphone access in your browser settings.")
-      } else if (event.error === "no-speech") {
-        console.log("No speech detected.")
-      } else {
-        console.log("Speech recognition error:", event.error)
-      }
-    }
-
-    recognitionRef.current = recognition
-  }, [])
-
-  const toggleMic = () => {
-    if (!recognitionRef.current) {
-      alert("Speech recognition is not supported in this browser. Try Chrome or Edge.")
       return
     }
-    if (listening) {
-      recognitionRef.current.stop()
-      setListening(false)
-    } else {
-      try {
-        recognitionRef.current.start()
-        setListening(true)
-      } catch (error) {
-        console.log("Could not start speech recognition:", error)
-      }
+
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      alert("Voice recording is not supported in this browser.")
+      return
     }
 
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop())
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+        setTranscribing(true)
+        const result = await transcribeAudio(audioBlob)
+        setTranscribing(false)
+        if (result?.text) {
+          setValue((prev) => (prev ? `${prev} ${result.text}` : result.text))
+        } else {
+          alert("Could not transcribe audio. Please try again.")
+        }
+      }
+
+      mediaRecorderRef.current = mediaRecorder
+      mediaRecorder.start()
+      setListening(true)
+    } catch (error) {
+      console.log("Could not access microphone:", error)
+      if (error.name === "NotAllowedError") {
+        alert("Microphone access was denied. Please allow microphone access in your browser settings.")
+      } else {
+        alert("Could not access microphone.")
+      }
+    }
   }
 
 
@@ -265,8 +260,10 @@ useEffect(() => {
             </button>
             <button
               onClick={toggleMic}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg  transition-all duration-150 cursor-pointer ${listening ?"bg-red-500 text-white":"text-slate-600 hover:bg-white/[0.05]" }`}>
-             {listening?<Mic size={16} />:<MicOff size={16}/>} 
+              disabled={transcribing}
+              title={transcribing ? "Transcribing..." : listening ? "Stop recording" : "Start voice input"}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg  transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${listening ? "bg-red-500 text-white animate-pulse" : "text-slate-600 hover:bg-white/[0.05]"}`}>
+             {listening ? <Mic size={16} /> : <MicOff size={16} />}
             </button>
           </div>
           <button
