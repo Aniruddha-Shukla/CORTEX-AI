@@ -1,4 +1,4 @@
-import { signInWithRedirect, getRedirectResult } from 'firebase/auth'
+import { signInWithRedirect, getRedirectResult,onAuthStateChanged } from 'firebase/auth'
 import React, { useEffect, useState } from 'react'
 import { auth, googleProvider } from '../../utils/firebase'
 import api from '../../utils/axios'
@@ -39,6 +39,21 @@ function Home() {
         }
         completeRedirectLogin()
     }, [])
+
+    useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        console.log("Auth state:", user);
+
+        if (user && !userData) {
+            const token = await user.getIdToken();
+            await handleLogin(token);
+        }
+
+        setCheckingRedirect(false);
+    });
+
+    return () => unsubscribe();
+}, [userData]);
 
     const googleLogin = async () => {
         await signInWithRedirect(auth, googleProvider)
