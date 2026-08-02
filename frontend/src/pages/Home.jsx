@@ -1,5 +1,5 @@
-import { signInWithPopup } from 'firebase/auth'
-import React from 'react'
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth'
+import React, { useEffect, useState } from 'react'
 import { auth, googleProvider } from '../../utils/firebase'
 import api from '../../utils/axios'
 import { FcGoogle } from "react-icons/fc";
@@ -10,8 +10,10 @@ import ChatArea from '../components/ChatArea';
 import Artifact from '../components/Artifact';
 
 function Home() {
-    const {userData}=useSelector(state=>state.user)
-    const dispatch=useDispatch()
+    const { userData } = useSelector(state => state.user)
+    const dispatch = useDispatch()
+    const [checkingRedirect, setCheckingRedirect] = useState(true)
+
     const handleLogin = async (token) => {
         try {
             const { data } = await api.post("/api/auth/login", { token })
@@ -21,25 +23,38 @@ function Home() {
         }
     }
 
+    useEffect(() => {
+        const completeRedirectLogin = async () => {
+            try {
+                const result = await getRedirectResult(auth)
+                if (result?.user) {
+                    const token = await result.user.getIdToken()
+                    await handleLogin(token)
+                }
+            } catch (error) {
+                console.log("redirect login error", error)
+            } finally {
+                setCheckingRedirect(false)
+            }
+        }
+        completeRedirectLogin()
+    }, [])
 
     const googleLogin = async () => {
-        const data = await signInWithPopup(auth, googleProvider)
-        const token = await data.user.getIdToken()
-        console.log(token)
-        await handleLogin(token)
-        console.log(data)
+        await signInWithRedirect(auth, googleProvider)
     }
+
     return (
         <div className='h-screen  flex bg-[#0d0f14] text-white overflow-hidden'>
 
-<SideBar/>
-<ChatArea/>
-<Artifact/>
+            <SideBar />
+            <ChatArea />
+            <Artifact />
 
 
 
 
-{!userData &&   <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur'>
+            {!userData && !checkingRedirect && <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur'>
                 <div className='w-[340px] bg-[#13151c] border border-white/[0.08] rounded-2xl p-7 flex flex-col gap-5'>
                     <div className='flex flex-col gap-1'>
                         <h2 className='text-[17px] font-semibold text-slate-100 tracking-tight'>Welcome to CortexAI</h2>
@@ -52,7 +67,7 @@ function Home() {
                     </button>
                 </div>
             </div>}
-          
+
         </div>
     )
 }
