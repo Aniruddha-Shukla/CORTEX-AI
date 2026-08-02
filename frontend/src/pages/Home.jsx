@@ -9,6 +9,8 @@ import SideBar from '../components/SideBar';
 import ChatArea from '../components/ChatArea';
 import Artifact from '../components/Artifact';
 
+const LOGIN_ATTEMPT_KEY = "cortexai_login_attempt"
+
 function Home() {
     const { userData } = useSelector(state => state.user)
     const dispatch = useDispatch()
@@ -25,14 +27,30 @@ function Home() {
     }
 
     useEffect(() => {
+        const wasAttemptingLogin = sessionStorage.getItem(LOGIN_ATTEMPT_KEY) === "1"
+
         const completeRedirectLogin = async () => {
             try {
                 const result = await getRedirectResult(auth)
+
                 if (result?.user) {
+                    sessionStorage.removeItem(LOGIN_ATTEMPT_KEY)
                     const token = await result.user.getIdToken()
                     await handleLogin(token)
+                } else if (wasAttemptingLogin) {
+                    // We came back from Google, but Firebase couldn't retrieve the
+                    // sign-in result. This almost always means the browser blocked
+                    // the storage Firebase needs to complete the flow.
+                    sessionStorage.removeItem(LOGIN_ATTEMPT_KEY)
+                    alert(
+                        "Sign-in didn't complete. This usually happens when Private/Incognito mode is on, " +
+                        "or when your browser blocks cross-site tracking/cookies. " +
+                        "Please try again in a normal (non-private) browser tab, and if you're on iPhone, " +
+                        "go to Settings > Safari and turn OFF 'Prevent Cross-Site Tracking', then retry."
+                    )
                 }
             } catch (error) {
+                sessionStorage.removeItem(LOGIN_ATTEMPT_KEY)
                 console.log("redirect login error", error)
                 if (error?.code === "auth/unauthorized-domain") {
                     alert("This domain is not authorized for sign-in. Please contact support.")
@@ -48,8 +66,10 @@ function Home() {
 
     const googleLogin = async () => {
         try {
+            sessionStorage.setItem(LOGIN_ATTEMPT_KEY, "1")
             await signInWithRedirect(auth, googleProvider)
         } catch (error) {
+            sessionStorage.removeItem(LOGIN_ATTEMPT_KEY)
             console.log("could not start sign-in", error)
             alert("Could not open Google sign-in. If you're opening this link inside WhatsApp, Instagram, or another app, please open it in your browser (Chrome or Safari) instead.")
         }
