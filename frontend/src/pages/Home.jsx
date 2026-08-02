@@ -8,7 +8,7 @@ import SideBar from '../components/SideBar';
 import ChatArea from '../components/ChatArea';
 import Artifact from '../components/Artifact';
 
-const GOOGLE_CLIENT_ID = "907832663312-ol6oda3ljconulkspfekkh6n46b9f57c.apps.googleusercontent.com"
+const GOOGLE_CLIENT_ID = "907832663312-ol60da3ljconulkspfekkh6n46b9f57c.apps.googleusercontent.com"
 
 function Home() {
     const { userData } = useSelector(state => state.user)
