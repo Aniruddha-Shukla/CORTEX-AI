@@ -21,7 +21,7 @@ function ChatInput() {
   const dispatch = useDispatch()
 
 
-  useEffect(() => {
+useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return;
 
@@ -44,19 +44,35 @@ function ChatInput() {
       setListening(false)
     }
 
+    recognition.onerror = (event) => {
+      setListening(false)
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        alert("Microphone access was denied. Please allow microphone access in your browser settings.")
+      } else if (event.error === "no-speech") {
+        console.log("No speech detected.")
+      } else {
+        console.log("Speech recognition error:", event.error)
+      }
+    }
+
     recognitionRef.current = recognition
   }, [])
 
   const toggleMic = () => {
     if (!recognitionRef.current) {
-      alert("speech recognition not supported")
+      alert("Speech recognition is not supported in this browser. Try Chrome or Edge.")
+      return
     }
     if (listening) {
       recognitionRef.current.stop()
       setListening(false)
     } else {
-      recognitionRef.current.start()
-      setListening(true)
+      try {
+        recognitionRef.current.start()
+        setListening(true)
+      } catch (error) {
+        console.log("Could not start speech recognition:", error)
+      }
     }
 
   }
