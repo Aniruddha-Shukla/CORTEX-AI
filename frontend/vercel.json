@@ -1,8 +1,0 @@
-{
-    "rewrites": [
-        {
-            "source": "/api/:path*",
-            "destination": "https://cortex-gateway-qg40.onrender.com/api/:path*"
-        }
-    ]
-}
