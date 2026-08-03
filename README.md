@@ -67,7 +67,7 @@ flowchart TD
 | **Backend** | Node.js, Express |
 | **Database** | MongoDB |
 | **AI / Agents** | LangGraph, LangChain |
-| **Vector Store** | *e.g. Pinecone / Chroma / Weaviate — update with yours* |
+| **Vector Store** | *Qdrant* |
 | **DevOps** | Docker |
 
 ---
@@ -83,7 +83,7 @@ flowchart TD
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git clone [https://github.com/YOUR_USERNAME/YOUR_REPO.git](https://github.com/Aniruddha-Shukla/CORTEX-AI.git)
 cd YOUR_REPO
 
 # 2. Install dependencies
@@ -99,7 +99,7 @@ npm run dev            # backend
 cd ../frontend && npm run dev   # frontend
 ```
 
-The app runs at `http://localhost:3000` 🎉
+The app runs at `(https://cortex-ai-wi2y.vercel.app/)` 🎉
 
 ---
 
