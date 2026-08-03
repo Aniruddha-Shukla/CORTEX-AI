@@ -179,7 +179,7 @@ multi-agent-ai-platform/
 
 <div align="center">
 
-**Aniruddha Shukla** · [LinkedIn](https://linkedin.com/aniruddhashukla-nie) · [GitHub](https://github.com/Aniruddha-Shukla) · 
+**Aniruddha Shukla** · [LinkedIn](https://www.linkedin.com/in/aniruddhashuklanie/) · [GitHub](https://github.com/Aniruddha-Shukla) · 
 
 ⭐ If this project helped you, consider giving it a star!
 
