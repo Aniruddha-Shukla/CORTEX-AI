@@ -83,8 +83,8 @@ flowchart TD
 
 ```bash
 # 1. Clone the repository
-git clone [https://github.com/YOUR_USERNAME/YOUR_REPO.git](https://github.com/Aniruddha-Shukla/CORTEX-AI.git)
-cd YOUR_REPO
+git clone (https://github.com/Aniruddha-Shukla/CORTEX-AI.git)
+cd CORTEX-AI
 
 # 2. Install dependencies
 cd backend && npm install
