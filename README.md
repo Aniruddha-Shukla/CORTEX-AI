@@ -8,8 +8,6 @@
 
 <p>
   <img src="https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge" alt="status"/>
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="license"/>
-  <img src="https://img.shields.io/badge/PRs-welcome-purple?style=for-the-badge" alt="PRs welcome"/>
 </p>
 
 <p>
@@ -26,7 +24,7 @@
   <a href="https://cortex-ai-nine-nu.vercel.app"><b>🌐 Live Demo</b></a> ·
   <a href="#-getting-started"><b>⚙️ Getting Started</b></a> ·
   <a href="#-api-reference"><b>📡 API Reference</b></a> ·
-  <a href="#-roadmap"><b>🗺️ Roadmap</b></a>
+ 
 </p>
 
 </div>
